@@ -3,6 +3,8 @@
 #include <rc/encoder_eqep.h>
 #include <rc/time.h>
 #include <rc/motor.h>
+#include <stdlib.h>
+
 double duty_cycle;
 double r = 0.0;
 double v_motor = 0;
@@ -43,25 +45,32 @@ int main()
   signal(SIGINT, __signal_handler);
   running=1;
   while(running){
-    //printf("%10d |", rc_encoder_eqep_read(1));
     if (counter % 10 == 0) { //should execute at 1 Khz
       //controller implementation
       c_speed = rc_encoder_eqep_read(1) * (1.0/1920.0) * 1000.0;
       rc_encoder_eqep_write(1,0);
-      r = 3.0;
       v_motor = -K11 * x1_hat - K12 * x2_hat - K2 * sigma;
       if (v_motor > 12) {
         v_motor = 12;
       }
-      if (v_motor < 0) {
-        v_motor = 0;
+      if (v_motor < -12) {
+        v_motor = -12;
       }
       x1_hat = x1_hat + .001 * x2_hat - 0.001 * L11 * (x1_hat - c_speed);
       x2_hat = x2_hat - .001 * alpha * x2_hat + .001 * beta * v_motor - .001 * L21 * (x1_hat - c_speed);
       sigma = sigma + .001 * (c_speed - r);
       duty_cycle = (v_motor/12.0);
-      printf("%f\n",duty_cycle);
+      //printf("%f\n",duty_cycle);
       rc_motor_set(1,duty_cycle);
+    }
+    if (counter % 1000 == 0) {
+      FILE *fp;
+      char buff[8];
+      fp = fopen("/home/debian/signal.txt","r");
+      fscanf(fp, "%s", buff);
+      fclose(fp);
+      r = atof(buff);
+      printf("%f\n", r);
     }
     counter++;
     rc_usleep(10);
