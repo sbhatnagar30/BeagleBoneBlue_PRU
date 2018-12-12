@@ -13,6 +13,16 @@ double sigma = 0;
 double x1_hat = 0;
 double x2_hat = 0;
 double c_speed = 0;
+
+double duty_cycle1;
+double r1 = 0.0;
+double v_motor1 = 0;
+double period1 = 0.001;
+double sigma1 = 0;
+double x1_hat1 = 0;
+double x2_hat1 = 0;
+double c_speed1 = 0;
+
 double alpha = 127.0865;
 double beta = 751.8797;
 double K11 = 9.975;
@@ -22,6 +32,7 @@ double L11 = 272.91;
 double L21 = 5316.4;
 
 int counter = 0;
+int secondCounter = 0;
 
 static int running = 0;
 // interrupt handler to catch ctrl-c
@@ -47,31 +58,39 @@ int main()
   while(running){
     if (counter % 10 == 0) { //should execute at 1 Khz
       //controller implementation
-      c_speed = rc_encoder_eqep_read(1) * (1.0/1920.0) * 1000.0;
+      c_speed = -1*rc_encoder_eqep_read(1) * (1.0/1920.0) * 1000.0;
       rc_encoder_eqep_write(1,0);
       v_motor = -K11 * x1_hat - K12 * x2_hat - K2 * sigma;
       if (v_motor > 12) {
         v_motor = 12;
       }
-      if (v_motor < -12) {
+      else if (v_motor < -12) {
         v_motor = -12;
       }
+      else {} //sigma = sigma + .001 * (c_speed - r); }
       x1_hat = x1_hat + .001 * x2_hat - 0.001 * L11 * (x1_hat - c_speed);
       x2_hat = x2_hat - .001 * alpha * x2_hat + .001 * beta * v_motor - .001 * L21 * (x1_hat - c_speed);
       sigma = sigma + .001 * (c_speed - r);
       duty_cycle = (v_motor/12.0);
-      //printf("%f\n",duty_cycle);
+      printf("%f",duty_cycle);
+      printf("  %f",sigma);
+      printf("  %f",c_speed);
+      printf("  %d\n",rc_encoder_eqep_read(1));
       rc_motor_set(1,duty_cycle);
     }
-    if (counter % 1000 == 0) {
+    if (counter % 10000 == 0) {
       FILE *fp;
       char buff[8];
-      fp = fopen("/home/debian/signal.txt","r");
+      fp = fopen("/home/debian/signal1.txt","r");
       fscanf(fp, "%s", buff);
       fclose(fp);
       r = atof(buff);
-      printf("%f\n", r);
+      //printf("%f\n", r);
     }
+    //if (counter % 10000 == 0) {
+    //  secondCounter++;
+    //  printf("%d\n",secondCounter);
+    //}
     counter++;
     rc_usleep(10);
   }
