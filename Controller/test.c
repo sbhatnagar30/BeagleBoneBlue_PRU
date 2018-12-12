@@ -72,11 +72,33 @@ int main()
       x2_hat = x2_hat - .001 * alpha * x2_hat + .001 * beta * v_motor - .001 * L21 * (x1_hat - c_speed);
       sigma = sigma + .001 * (c_speed - r);
       duty_cycle = (v_motor/12.0);
-      printf("%f",duty_cycle);
-      printf("  %f",sigma);
-      printf("  %f",c_speed);
-      printf("  %d\n",rc_encoder_eqep_read(1));
+      //printf("%f",duty_cycle);
+      //printf("  %f",sigma);
+      //printf("  %f",c_speed);
+      //printf("  %d",rc_encoder_eqep_read(1));
       rc_motor_set(1,duty_cycle);
+    }
+    if (counter % 10 == 0) { //should execute at 1 Khz
+      //controller implementation
+      c_speed1 = -1*rc_encoder_eqep_read(2) * (1.0/1920.0) * 1000.0;
+      rc_encoder_eqep_write(2,0);
+      v_motor1 = -K11 * x1_hat1 - K12 * x2_hat1 - K2 * sigma1;
+      if (v_motor1 > 12) {
+        v_motor1 = 12;
+      }
+      else if (v_motor1 < -12) {
+        v_motor1 = -12;
+      }
+      else {} //sigma = sigma + .001 * (c_speed - r); }
+      x1_hat1 = x1_hat1 + .001 * x2_hat1 - 0.001 * L11 * (x1_hat1 - c_speed1);
+      x2_hat1 = x2_hat1 - .001 * alpha * x2_hat1 + .001 * beta * v_motor1 - .001 * L21 * (x1_hat1 - c_speed1);
+      sigma1 = sigma1 + .001 * (c_speed1 - r1);
+      duty_cycle1 = (v_motor1/12.0);
+      //printf("  %f",duty_cycle1);
+      //printf("  %f",sigma1);
+      //printf("  %f",c_speed1);
+      //printf("  %d\n",rc_encoder_eqep_read(2));
+      rc_motor_set(2,duty_cycle1);
     }
     if (counter % 10000 == 0) {
       FILE *fp;
@@ -87,12 +109,21 @@ int main()
       r = atof(buff);
       //printf("%f\n", r);
     }
-    //if (counter % 10000 == 0) {
-    //  secondCounter++;
-    //  printf("%d\n",secondCounter);
-    //}
+    if (counter % 10000 == 0) {
+      FILE *fp;
+      char buff[8];
+      fp = fopen("/home/debian/signal2.txt","r");
+      fscanf(fp, "%s", buff);
+      fclose(fp);
+      r1 = atof(buff);
+      //printf("%f\n", r);
+    }
+    if (counter % 10000 == 0) {
+      secondCounter++;
+      printf("%d\n",secondCounter);
+    }
     counter++;
-    rc_usleep(10);
+    rc_usleep(1);
   }
   rc_motor_cleanup();
   rc_encoder_eqep_cleanup();
