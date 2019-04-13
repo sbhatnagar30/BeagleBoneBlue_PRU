@@ -55,7 +55,7 @@ int main()
   // set signal handler so the loop can exit cleanly
   signal(SIGINT, __signal_handler);
   running=1;
-  while(running){
+  while(running) {
     if (counter % 10 == 0) { //should execute at 1 Khz
       //controller implementation
       c_speed = -1*rc_encoder_eqep_read(1) * (1.0/1920.0) * 1000.0;
@@ -77,8 +77,7 @@ int main()
       //printf("  %f",c_speed);
       //printf("  %d",rc_encoder_eqep_read(1));
       rc_motor_set(1,duty_cycle);
-    }
-    if (counter % 10 == 0) { //should execute at 1 Khz
+
       //controller implementation
       c_speed1 = -1*rc_encoder_eqep_read(2) * (1.0/1920.0) * 1000.0;
       rc_encoder_eqep_write(2,0);
@@ -99,28 +98,29 @@ int main()
       //printf("  %f",c_speed1);
       //printf("  %d\n",rc_encoder_eqep_read(2));
       rc_motor_set(2,duty_cycle1);
-    }
-    if (counter % 10000 == 0) {
-      FILE *fp;
-      char buff[8];
-      fp = fopen("/home/debian/signal1.txt","r");
-      fscanf(fp, "%s", buff);
-      fclose(fp);
-      r = atof(buff);
-      //printf("%f\n", r);
-    }
-    if (counter % 10000 == 0) {
-      FILE *fp;
-      char buff[8];
-      fp = fopen("/home/debian/signal2.txt","r");
-      fscanf(fp, "%s", buff);
-      fclose(fp);
-      r1 = atof(buff);
-      //printf("%f\n", r);
-    }
-    if (counter % 10000 == 0) {
-      secondCounter++;
-      printf("%d\n",secondCounter);
+
+      if (counter % 10000 == 0) {
+        FILE *fp;
+        char buff[8];
+        fp = fopen("/home/debian/signal1.txt","r");
+        fscanf(fp, "%s", buff);
+        fclose(fp);
+        r = atof(buff);
+        //printf("%f\n", r);
+      }
+      if (counter % 10000 == 0) {
+        FILE *fp;
+        char buff[8];
+        fp = fopen("/home/debian/signal2.txt","r");
+        fscanf(fp, "%s", buff);
+        fclose(fp);
+        r1 = atof(buff);
+        //printf("%f\n", r);
+      }
+      if (counter % 10000 == 0) {
+        secondCounter++;
+        printf("%d\n",secondCounter);
+      }
     }
     counter++;
     rc_usleep(1);
